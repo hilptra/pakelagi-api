@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ProductController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\Admin\ProductController as AdminProductController;
 
 Route::prefix('v1')->group(function () {
     // Publik
@@ -21,5 +22,12 @@ Route::prefix('v1')->group(function () {
             Route::post('logout', [AuthController::class, 'logout']);
             Route::get('me', [AuthController::class, 'me']);
         });
+    });
+
+    // Admin (wajib login)
+    Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
+        Route::apiResource('products', AdminProductController::class);
+        Route::post('products/{product}/sold', [AdminProductController::class, 'markSold']);
+        Route::patch('products/{product}/status', [AdminProductController::class, 'changeStatus']);
     });
 });
