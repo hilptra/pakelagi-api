@@ -10,13 +10,14 @@ class ProductImage extends Model
 {
     use HasFactory;
 
-    protected $fillable = 
-    [
-        'product_id',
-        'path',
-        'sort_order',
-        'is_primary',
-    ];
+    protected $fillable =
+        [
+            'product_id',
+            'path',
+            'thumbnail_path',
+            'sort_order',
+            'is_primary',
+        ];
 
     protected function casts(): array
     {

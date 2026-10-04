@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 
-class AdminProductListResource extends ProductListResource
+class AdminProductImageResource extends ProductImageResource
 {
     public function toArray(Request $request): array
     {
