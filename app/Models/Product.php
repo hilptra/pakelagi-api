@@ -52,7 +52,7 @@ class Product extends Model
 
     public function scopeVisible(Builder $query): Builder
     {
-        return $query->where('status','!=', ProductStatus::Hidden);
+        return $query->where('status', '!=', ProductStatus::Hidden);
     }
 
     public function primaryImage(): HasOne

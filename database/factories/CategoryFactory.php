@@ -23,7 +23,7 @@ class CategoryFactory extends Factory
         return [
             'name' => Str::title($name),
             'slug' => Str::slug($name),
-            'measurement_fields' => ['lebar_dada','panjang_bahu'],
+            'measurement_fields' => ['lebar_dada', 'panjang_bahu'],
         ];
     }
 }

@@ -1,10 +1,11 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Api\V1\Admin\ProductImageController as AdminProductImageController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ProductController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\V1\Admin\ProductController as AdminProductController;
 
 Route::prefix('v1')->group(function () {
     // Publik
@@ -29,5 +30,12 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('products', AdminProductController::class);
         Route::post('products/{product}/sold', [AdminProductController::class, 'markSold']);
         Route::patch('products/{product}/status', [AdminProductController::class, 'changeStatus']);
+
+        Route::scopeBindings()->group(function () {
+            Route::post('products/{product}/images', [AdminProductImageController::class, 'store']);
+            Route::put('products/{product}/images/order', [AdminProductImageController::class, 'reorder']);
+            Route::patch('products/{product}/images/{image}', [AdminProductImageController::class, 'update']);
+            Route::delete('products/{product}/images/{image}', [AdminProductImageController::class, 'destroy']);
+        });
     });
 });
