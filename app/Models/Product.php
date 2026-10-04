@@ -31,10 +31,10 @@ class Product extends Model
 
     protected function casts(): array
     {
-        return [ 
+        return [
             'condition' => ProductCondition::class,
             'status' => ProductStatus::class,
-            'measurement' => 'array',
+            'measurements' => 'array',
             'sold_at' => 'datetime',
         ];
     }

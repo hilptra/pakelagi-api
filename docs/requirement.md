@@ -1,12 +1,12 @@
 # PakeLagi API — Dokumen Kebutuhan (Requirements)
 
-| | |
-|---|---|
-| **Proyek** | pakelagi.works — toko pakaian bekas (preloved) |
-| **Repositori** | `pakelagi-api` (backend) |
-| **Versi dokumen** | 0.2 (Draft) |
-| **Tanggal** | 4 Oktober 2026 |
-| **Dokumen terkait** | [ERD](./erd.md) · [User Flow](./user-flow.md) |
+|                     |                                                |
+| ------------------- | ---------------------------------------------- |
+| **Proyek**          | pakelagi.works — toko pakaian bekas (preloved) |
+| **Repositori**      | `pakelagi-api` (backend)                       |
+| **Versi dokumen**   | 0.2 (Draft)                                    |
+| **Tanggal**         | 4 Oktober 2026                                 |
+| **Dokumen terkait** | [ERD](./erd.md) · [User Flow](./user-flow.md)  |
 
 ---
 
@@ -35,24 +35,24 @@ Proyek ini punya tiga tujuan sekaligus: **dipakai berjualan sungguhan** setelah 
 
 ## 3. Tech Stack
 
-| Bagian | Teknologi |
-|---|---|
-| Backend | Laravel 12, PHP 8.2–8.5 |
-| API | REST, berversi di URL (`/api/v1`), format JSON |
-| Authentication | Laravel Sanctum (direncanakan berbasis cookie untuk SPA, domain induk yang sama) |
-| Database | MySQL (encoding `utf8mb4`) |
-| Queue | Laravel Queue, driver database untuk MVP (usulan: dipakai untuk revalidasi cache dan pemrosesan gambar); Redis opsional di tahap lanjut |
-| Penyimpanan foto | Laravel Filesystem (disk lokal dulu; dapat dialihkan ke layanan eksternal tanpa mengubah logika) |
-| Web Frontend (repo terpisah) | Next.js, TypeScript, Tailwind CSS |
-| Testing | Pest/PHPUnit (backend, prioritas utama) |
-| Kualitas kode | Laravel Pint (format), Larastan (analisis statis) |
-| CI | GitHub Actions (Pint, Larastan, tes pada setiap Pull Request) |
-| Dokumentasi API | Scribe atau OpenAPI/Swagger (dipilih saat implementasi) |
-| Version Control | Git & GitHub (`main` + `develop` + branch per fitur) |
-| Local Dev Environment | Laravel Herd atau Laragon (PHP, Composer, MySQL) |
-| Domain | `pakelagi.works` (frontend), `api.pakelagi.works` (API) |
-| Hosting | Hosting PHP atau VPS (belum diputuskan) |
-| Pembayaran online (tahap 2) | Midtrans atau Xendit (belum dipilih) |
+| Bagian                       | Teknologi                                                                                                                               |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Backend                      | Laravel 12, PHP 8.2–8.5                                                                                                                 |
+| API                          | REST, berversi di URL (`/api/v1`), format JSON                                                                                          |
+| Authentication               | Laravel Sanctum (direncanakan berbasis cookie untuk SPA, domain induk yang sama)                                                        |
+| Database                     | MySQL (encoding `utf8mb4`)                                                                                                              |
+| Queue                        | Laravel Queue, driver database untuk MVP (usulan: dipakai untuk revalidasi cache dan pemrosesan gambar); Redis opsional di tahap lanjut |
+| Penyimpanan foto             | Laravel Filesystem (disk lokal dulu; dapat dialihkan ke layanan eksternal tanpa mengubah logika)                                        |
+| Web Frontend (repo terpisah) | Next.js, TypeScript, Tailwind CSS                                                                                                       |
+| Testing                      | Pest/PHPUnit (backend, prioritas utama)                                                                                                 |
+| Kualitas kode                | Laravel Pint (format), Larastan (analisis statis)                                                                                       |
+| CI                           | GitHub Actions (Pint, Larastan, tes pada setiap Pull Request)                                                                           |
+| Dokumentasi API              | Scribe atau OpenAPI/Swagger (dipilih saat implementasi)                                                                                 |
+| Version Control              | Git & GitHub (`main` + `develop` + branch per fitur)                                                                                    |
+| Local Dev Environment        | Laravel Herd atau Laragon (PHP, Composer, MySQL)                                                                                        |
+| Domain                       | `pakelagi.works` (frontend), `api.pakelagi.works` (API)                                                                                 |
+| Hosting                      | Hosting PHP atau VPS (belum diputuskan)                                                                                                 |
+| Pembayaran online (tahap 2)  | Midtrans atau Xendit (belum dipilih)                                                                                                    |
 
 > **Catatan:** Laravel 12 sudah memasuki fase perbaikan keamanan saja (sampai 24 Februari 2027). Rencanakan upgrade ke Laravel 13 sebagai pekerjaan terjadwal.
 
@@ -127,11 +127,11 @@ Folder `Actions` bukan bawaan Laravel; kita membuatnya sendiri untuk menampung a
 
 ## 6. Aktor
 
-| Aktor | Deskripsi | Akses |
-|---|---|---|
-| **Pembeli (tamu)** | Pengunjung yang menjelajah katalog. Tidak perlu akun. | Endpoint publik, hanya baca |
-| **Admin** | Pemilik toko yang mengelola produk. | Endpoint publik + endpoint admin (terautentikasi) |
-| **Frontend Next.js** | Klien API (sisi publik dan halaman admin). | Memanggil API atas nama pembeli/admin |
+| Aktor                | Deskripsi                                             | Akses                                             |
+| -------------------- | ----------------------------------------------------- | ------------------------------------------------- |
+| **Pembeli (tamu)**   | Pengunjung yang menjelajah katalog. Tidak perlu akun. | Endpoint publik, hanya baca                       |
+| **Admin**            | Pemilik toko yang mengelola produk.                   | Endpoint publik + endpoint admin (terautentikasi) |
+| **Frontend Next.js** | Klien API (sisi publik dan halaman admin).            | Memanggil API atas nama pembeli/admin             |
 
 ---
 
@@ -182,21 +182,21 @@ Versi diagram lengkap (alur pembeli, alur admin, dan alur teknis) ada di [`docs/
 
 ## 9. Aturan Bisnis
 
-| ID | Aturan |
-|---|---|
-| BR-01 | Setiap produk bersifat **unik (stok 1)**. Tidak ada kolom stok; ketersediaan ditentukan oleh `status`. |
-| BR-02 | Status produk hanya salah satu dari: `available`, `sold`, `hidden`. |
-| BR-03 | Kondisi produk hanya salah satu dari: `like_new`, `good`, `fair`, ditambah catatan bebas (`condition_notes`) untuk minus. |
-| BR-04 | Produk `hidden` **tidak pernah** muncul di API publik. |
+| ID    | Aturan                                                                                                                                                                                                  |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| BR-01 | Setiap produk bersifat **unik (stok 1)**. Tidak ada kolom stok; ketersediaan ditentukan oleh `status`.                                                                                                  |
+| BR-02 | Status produk hanya salah satu dari: `available`, `sold`, `hidden`.                                                                                                                                     |
+| BR-03 | Kondisi produk hanya salah satu dari: `like_new`, `good`, `fair`, ditambah catatan bebas (`condition_notes`) untuk minus.                                                                               |
+| BR-04 | Produk `hidden` **tidak pernah** muncul di API publik.                                                                                                                                                  |
 | BR-05 | Produk `sold` **tetap bisa dibuka lewat slug** agar link yang sudah dibagikan tidak error. Katalog menampilkannya di urutan bawah atau menyembunyikannya setelah beberapa hari (berdasarkan `sold_at`). |
-| BR-06 | Saat produk ditandai terjual, sistem mengisi `sold_at` dengan waktu saat itu. |
-| BR-07 | `slug` produk dan kategori bersifat unik dan dipakai di URL. |
-| BR-08 | Harga disimpan sebagai bilangan bulat dalam rupiah (tanpa desimal). |
-| BR-09 | Ukuran (`measurements`) dalam cm dan harus sesuai daftar `measurement_fields` milik kategori produk tersebut. |
-| BR-10 | Kategori yang masih memiliki produk **tidak boleh dihapus**. |
-| BR-11 | Menghapus produk ikut menghapus data foto-fotonya, **termasuk file di storage** (dikerjakan lewat kode, bukan hanya cascade database). |
-| BR-12 | Setiap produk punya paling banyak satu foto utama (`is_primary`). |
-| BR-13 | Foto ditampilkan berurutan menurut `sort_order`. |
+| BR-06 | Saat produk ditandai terjual, sistem mengisi `sold_at` dengan waktu saat itu.                                                                                                                           |
+| BR-07 | `slug` produk dan kategori bersifat unik dan dipakai di URL.                                                                                                                                            |
+| BR-08 | Harga disimpan sebagai bilangan bulat dalam rupiah (tanpa desimal).                                                                                                                                     |
+| BR-09 | Ukuran (`measurements`) dalam cm dan harus sesuai daftar `measurement_fields` milik kategori produk tersebut.                                                                                           |
+| BR-10 | Kategori yang masih memiliki produk **tidak boleh dihapus**.                                                                                                                                            |
+| BR-11 | Menghapus produk ikut menghapus data foto-fotonya, **termasuk file di storage** (dikerjakan lewat kode, bukan hanya cascade database).                                                                  |
+| BR-12 | Setiap produk punya paling banyak satu foto utama (`is_primary`).                                                                                                                                       |
+| BR-13 | Foto ditampilkan berurutan menurut `sort_order`.                                                                                                                                                        |
 
 **Risiko yang diketahui:** karena checkout lewat WhatsApp dan stok hanya 1, dua pembeli bisa menghubungi untuk barang yang sama. Keranjang tidak menjamin reservasi; admin yang memutuskan dan menandai barang terjual secara manual.
 
@@ -224,63 +224,63 @@ Prioritas memakai skala MoSCoW: **M** (Must), **S** (Should), **C** (Could).
 
 ### 11.1 API publik
 
-| ID | Kebutuhan | Prioritas |
-|---|---|---|
-| FR-01 | Menampilkan daftar kategori beserta `measurement_fields`-nya. | M |
-| FR-02 | Menampilkan daftar produk dengan paginasi. | M |
-| FR-03 | Memfilter produk berdasarkan kategori, ukuran (`size_label`), dan rentang harga. | M |
-| FR-04 | Mencari produk berdasarkan kata kunci pada nama/merek/deskripsi. | S |
-| FR-05 | Mengurutkan produk (terbaru, harga naik, harga turun). | S |
-| FR-06 | Menampilkan detail produk berdasarkan `slug`, lengkap dengan foto, kondisi, ukuran, dan status. | M |
-| FR-07 | Mengambil banyak produk sekaligus berdasarkan daftar slug (dukungan wishlist). Slug yang sudah tidak ada diabaikan, bukan menyebabkan error. | M |
-| FR-08 | Hanya menampilkan produk yang tidak `hidden` (lihat BR-04, BR-05). | M |
+| ID    | Kebutuhan                                                                                                                                    | Prioritas |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| FR-01 | Menampilkan daftar kategori beserta `measurement_fields`-nya.                                                                                | M         |
+| FR-02 | Menampilkan daftar produk dengan paginasi.                                                                                                   | M         |
+| FR-03 | Memfilter produk berdasarkan kategori, ukuran (`size_label`), dan rentang harga.                                                             | M         |
+| FR-04 | Mencari produk berdasarkan kata kunci pada nama/merek/deskripsi.                                                                             | S         |
+| FR-05 | Mengurutkan produk (terbaru, harga naik, harga turun).                                                                                       | S         |
+| FR-06 | Menampilkan detail produk berdasarkan `slug`, lengkap dengan foto, kondisi, ukuran, dan status.                                              | M         |
+| FR-07 | Mengambil banyak produk sekaligus berdasarkan daftar slug (dukungan wishlist). Slug yang sudah tidak ada diabaikan, bukan menyebabkan error. | M         |
+| FR-08 | Hanya menampilkan produk yang tidak `hidden` (lihat BR-04, BR-05).                                                                           | M         |
 
 ### 11.2 Autentikasi admin
 
-| ID | Kebutuhan | Prioritas |
-|---|---|---|
-| FR-10 | Admin dapat login dengan email dan kata sandi. | M |
-| FR-11 | Admin dapat logout. | M |
-| FR-12 | Frontend dapat mengambil data admin yang sedang login (`me`). | M |
-| FR-13 | Semua endpoint admin menolak permintaan tanpa autentikasi (401). | M |
-| FR-14 | Percobaan login dibatasi lajunya (rate limiting). | M |
+| ID    | Kebutuhan                                                        | Prioritas |
+| ----- | ---------------------------------------------------------------- | --------- |
+| FR-10 | Admin dapat login dengan email dan kata sandi.                   | M         |
+| FR-11 | Admin dapat logout.                                              | M         |
+| FR-12 | Frontend dapat mengambil data admin yang sedang login (`me`).    | M         |
+| FR-13 | Semua endpoint admin menolak permintaan tanpa autentikasi (401). | M         |
+| FR-14 | Percobaan login dibatasi lajunya (rate limiting).                | M         |
 
 ### 11.3 Manajemen produk (admin)
 
-| ID | Kebutuhan | Prioritas |
-|---|---|---|
-| FR-20 | Menampilkan semua produk termasuk berstatus `hidden` dan `sold`, dengan filter status. | M |
-| FR-21 | Menambah produk; `slug` dibuat otomatis dari nama dan dijamin unik. | M |
-| FR-22 | Mengubah data produk. | M |
-| FR-23 | Menghapus produk (lihat BR-11). | M |
-| FR-24 | Menandai produk sebagai terjual (mengisi `sold_at`, lihat BR-06). | M |
-| FR-25 | Menyembunyikan dan menayangkan kembali produk (`hidden` ↔ `available`). | M |
-| FR-26 | Membatalkan status terjual (kembali ke `available`) bila pembelian batal. | S |
+| ID    | Kebutuhan                                                                              | Prioritas |
+| ----- | -------------------------------------------------------------------------------------- | --------- |
+| FR-20 | Menampilkan semua produk termasuk berstatus `hidden` dan `sold`, dengan filter status. | M         |
+| FR-21 | Menambah produk; `slug` dibuat otomatis dari nama dan dijamin unik.                    | M         |
+| FR-22 | Mengubah data produk.                                                                  | M         |
+| FR-23 | Menghapus produk (lihat BR-11).                                                        | M         |
+| FR-24 | Menandai produk sebagai terjual (mengisi `sold_at`, lihat BR-06).                      | M         |
+| FR-25 | Menyembunyikan dan menayangkan kembali produk (`hidden` ↔ `available`).                | M         |
+| FR-26 | Membatalkan status terjual (kembali ke `available`) bila pembelian batal.              | S         |
 
 ### 11.4 Manajemen foto (admin)
 
-| ID | Kebutuhan | Prioritas |
-|---|---|---|
-| FR-30 | Mengunggah satu atau banyak foto untuk sebuah produk. | M |
-| FR-31 | Memvalidasi file unggahan: tipe gambar yang diizinkan dan batas ukuran. | M |
-| FR-32 | Membuat beberapa ukuran gambar (misalnya thumbnail dan ukuran detail) agar katalog ringan. | S |
-| FR-33 | Menentukan foto utama dan mengatur urutan foto. | M |
-| FR-34 | Menghapus foto (data dan file). | M |
+| ID    | Kebutuhan                                                                                                                                                                                      | Prioritas |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| FR-30 | Mengunggah satu atau banyak foto untuk sebuah produk.                                                                                                                                          | M         |
+| FR-31 | Memvalidasi file unggahan: format JPG/PNG/WebP, **maksimal 2 MB per foto**, **maksimal 8 foto per permintaan**, dan dimensi maksimal 4000 × 4000 px. Frontend mengompres foto sebelum dikirim. | M         |
+| FR-32 | Membuat beberapa ukuran gambar (misalnya thumbnail dan ukuran detail) agar katalog ringan.                                                                                                     | S         |
+| FR-33 | Menentukan foto utama dan mengatur urutan foto.                                                                                                                                                | M         |
+| FR-34 | Menghapus foto (data dan file).                                                                                                                                                                | M         |
 
 ### 11.5 Manajemen kategori (admin)
 
-| ID | Kebutuhan | Prioritas |
-|---|---|---|
-| FR-40 | Menambah dan mengubah kategori beserta `measurement_fields` (daftar jenis ukuran yang relevan). | M |
-| FR-41 | Menghapus kategori hanya jika tidak punya produk (BR-10). | M |
-| FR-42 | Kategori awal: atasan, bawahan, outer, aksesori (diisi lewat seeder). | M |
+| ID    | Kebutuhan                                                                                       | Prioritas |
+| ----- | ----------------------------------------------------------------------------------------------- | --------- |
+| FR-40 | Menambah dan mengubah kategori beserta `measurement_fields` (daftar jenis ukuran yang relevan). | M         |
+| FR-41 | Menghapus kategori hanya jika tidak punya produk (BR-10).                                       | M         |
+| FR-42 | Kategori awal: atasan, bawahan, outer, aksesori (diisi lewat seeder).                           | M         |
 
 ### 11.6 Integrasi dengan frontend
 
-| ID | Kebutuhan | Prioritas |
-|---|---|---|
-| FR-50 | Setelah produk dibuat, diubah, ditandai terjual, disembunyikan, atau dihapus, backend memanggil endpoint revalidasi di Next.js agar halaman terkait diperbarui. Kegagalan pemanggilan dicatat di log dan tidak menggagalkan permintaan admin. | M |
-| FR-51 | CORS dan cookie autentikasi dikonfigurasi agar hanya domain frontend yang diizinkan. | M |
+| ID    | Kebutuhan                                                                                                                                                                                                                                     | Prioritas |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| FR-50 | Setelah produk dibuat, diubah, ditandai terjual, disembunyikan, atau dihapus, backend memanggil endpoint revalidasi di Next.js agar halaman terkait diperbarui. Kegagalan pemanggilan dicatat di log dan tidak menggagalkan permintaan admin. | M         |
+| FR-51 | CORS dan cookie autentikasi dikonfigurasi agar hanya domain frontend yang diizinkan.                                                                                                                                                          | M         |
 
 ---
 
@@ -288,9 +288,10 @@ Prioritas memakai skala MoSCoW: **M** (Must), **S** (Should), **C** (Could).
 
 ### 12.1 Keamanan
 
-- Validasi semua input lewat Form Request; lindungi dari *mass assignment* dengan `$fillable`.
+- Validasi semua input lewat Form Request; lindungi dari _mass assignment_ dengan `$fillable`.
 - Rate limiting pada login dan endpoint publik.
 - Unggahan file divalidasi (tipe MIME, ekstensi, ukuran); nama file dibuat ulang oleh server, bukan memakai nama dari pengguna.
+- Batas PHP dan web server (`upload_max_filesize`, `post_max_size`, dan `client_max_body_size` pada Nginx) harus lebih longgar daripada aturan validasi Laravel, supaya Laravel yang menolak dengan pesan yang jelas. Catat sebagai bagian dari konfigurasi produksi.
 - Rahasia (`.env`, kunci, kata sandi) tidak pernah masuk Git; sediakan `.env.example`.
 - HTTPS di produksi; cookie autentikasi ditandai `secure` dan `httpOnly`.
 - Respons error tidak membocorkan detail internal (matikan `APP_DEBUG` di produksi).
@@ -299,7 +300,7 @@ Prioritas memakai skala MoSCoW: **M** (Must), **S** (Should), **C** (Could).
 
 - Indeks pada kolom yang dipakai filter (`status`, `category_id`, `price`).
 - Semua daftar menggunakan paginasi dengan batas maksimum `per_page`.
-- Hindari *N+1 query* dengan *eager loading* (misalnya memuat kategori dan foto sekaligus).
+- Hindari _N+1 query_ dengan _eager loading_ (misalnya memuat kategori dan foto sekaligus).
 - Foto dikompres dan tersedia dalam beberapa ukuran.
 
 ### 12.3 Kualitas dan keterpeliharaan
@@ -330,38 +331,38 @@ Semua rute berawalan `/api/v1`.
 
 ### Publik
 
-| Method | Path | Fungsi | Kebutuhan |
-|---|---|---|---|
-| GET | `/categories` | Daftar kategori | FR-01 |
-| GET | `/products` | Daftar produk (parameter: `category`, `size`, `min_price`, `max_price`, `q`, `sort`, `page`, `per_page`, `slugs`) | FR-02–05, FR-07, FR-08 |
-| GET | `/products/{slug}` | Detail produk | FR-06 |
+| Method | Path               | Fungsi                                                                                                            | Kebutuhan              |
+| ------ | ------------------ | ----------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| GET    | `/categories`      | Daftar kategori                                                                                                   | FR-01                  |
+| GET    | `/products`        | Daftar produk (parameter: `category`, `size`, `min_price`, `max_price`, `q`, `sort`, `page`, `per_page`, `slugs`) | FR-02–05, FR-07, FR-08 |
+| GET    | `/products/{slug}` | Detail produk                                                                                                     | FR-06                  |
 
 ### Autentikasi
 
-| Method | Path | Fungsi | Kebutuhan |
-|---|---|---|---|
-| GET | `/sanctum/csrf-cookie` | Mengambil cookie CSRF (alur SPA Sanctum) | FR-10 |
-| POST | `/auth/login` | Login admin | FR-10, FR-14 |
-| POST | `/auth/logout` | Logout | FR-11 |
-| GET | `/auth/me` | Data admin yang login | FR-12 |
+| Method | Path                   | Fungsi                                   | Kebutuhan    |
+| ------ | ---------------------- | ---------------------------------------- | ------------ |
+| GET    | `/sanctum/csrf-cookie` | Mengambil cookie CSRF (alur SPA Sanctum) | FR-10        |
+| POST   | `/auth/login`          | Login admin                              | FR-10, FR-14 |
+| POST   | `/auth/logout`         | Logout                                   | FR-11        |
+| GET    | `/auth/me`             | Data admin yang login                    | FR-12        |
 
 ### Admin (wajib autentikasi)
 
-| Method | Path | Fungsi | Kebutuhan |
-|---|---|---|---|
-| GET | `/admin/products` | Daftar produk semua status | FR-20 |
-| POST | `/admin/products` | Tambah produk | FR-21 |
-| GET | `/admin/products/{id}` | Detail produk (semua status) | FR-20 |
-| PUT/PATCH | `/admin/products/{id}` | Ubah produk | FR-22 |
-| DELETE | `/admin/products/{id}` | Hapus produk | FR-23 |
-| POST | `/admin/products/{id}/sold` | Tandai terjual | FR-24 |
-| PATCH | `/admin/products/{id}/status` | Sembunyikan/tayangkan/batalkan terjual | FR-25, FR-26 |
-| POST | `/admin/products/{id}/images` | Unggah foto | FR-30–32 |
-| PATCH | `/admin/products/{id}/images/{image}` | Atur foto utama dan urutan | FR-33 |
-| DELETE | `/admin/products/{id}/images/{image}` | Hapus foto | FR-34 |
-| POST | `/admin/categories` | Tambah kategori | FR-40 |
-| PUT/PATCH | `/admin/categories/{id}` | Ubah kategori | FR-40 |
-| DELETE | `/admin/categories/{id}` | Hapus kategori | FR-41 |
+| Method    | Path                                  | Fungsi                                 | Kebutuhan    |
+| --------- | ------------------------------------- | -------------------------------------- | ------------ |
+| GET       | `/admin/products`                     | Daftar produk semua status             | FR-20        |
+| POST      | `/admin/products`                     | Tambah produk                          | FR-21        |
+| GET       | `/admin/products/{id}`                | Detail produk (semua status)           | FR-20        |
+| PUT/PATCH | `/admin/products/{id}`                | Ubah produk                            | FR-22        |
+| DELETE    | `/admin/products/{id}`                | Hapus produk                           | FR-23        |
+| POST      | `/admin/products/{id}/sold`           | Tandai terjual                         | FR-24        |
+| PATCH     | `/admin/products/{id}/status`         | Sembunyikan/tayangkan/batalkan terjual | FR-25, FR-26 |
+| POST      | `/admin/products/{id}/images`         | Unggah foto                            | FR-30–32     |
+| PATCH     | `/admin/products/{id}/images/{image}` | Atur foto utama dan urutan             | FR-33        |
+| DELETE    | `/admin/products/{id}/images/{image}` | Hapus foto                             | FR-34        |
+| POST      | `/admin/categories`                   | Tambah kategori                        | FR-40        |
+| PUT/PATCH | `/admin/categories/{id}`              | Ubah kategori                          | FR-40        |
+| DELETE    | `/admin/categories/{id}`              | Hapus kategori                         | FR-41        |
 
 ---
 
@@ -370,7 +371,7 @@ Semua rute berawalan `/api/v1`.
 ### 14.1 Strategi branch
 
 - `main`: hanya kode siap rilis; deploy ke produksi dari sini.
-- `develop`: tempat semua fitur digabung dan diuji. Jadi *default branch* di GitHub.
+- `develop`: tempat semua fitur digabung dan diuji. Jadi _default branch_ di GitHub.
 - `feature/<nama>`, `fix/<nama>`, `chore/<nama>`, `docs/<nama>`: dibuat dari `develop`, digabung kembali lewat Pull Request.
 - `hotfix/<nama>`: dibuat dari `main` untuk perbaikan darurat, lalu digabung ke `main` **dan** `develop`.
 
@@ -378,12 +379,12 @@ Semua rute berawalan `/api/v1`.
 
 - Fitur → `develop`: **Squash and merge**.
 - `develop` → `main`: **Create a merge commit**, lalu beri tag versi (`v0.x.x`, `v1.0.0` untuk rilis pertama yang dipakai berjualan).
-- Semua perubahan lewat Pull Request; *force push* dan penghapusan branch dilarang pada `main` dan `develop`.
+- Semua perubahan lewat Pull Request; _force push_ dan penghapusan branch dilarang pada `main` dan `develop`.
 - Pesan commit mengikuti Conventional Commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`.
 
 ### 14.3 CI (GitHub Actions)
 
-Setiap Pull Request menjalankan: Pint (cek format), Larastan (analisis statis), dan seluruh tes. Hasilnya menjadi *status check* wajib sebelum merge.
+Setiap Pull Request menjalankan: Pint (cek format), Larastan (analisis statis), dan seluruh tes. Hasilnya menjadi _status check_ wajib sebelum merge.
 
 ---
 
@@ -422,29 +423,29 @@ Frontend (Next.js) dikerjakan setelah backend selesai.
 
 ## 17. Pertanyaan Terbuka
 
-| # | Pertanyaan | Dampak |
-|---|---|---|
-| 1 | Struktur repositori: dua repo terpisah (rencana saat ini) atau monorepo satu repo dengan folder `backend/`, `frontend/`, `docs/`? | Struktur proyek, CI, dan deploy |
-| 2 | Estimasi waktu pengerjaan dan target tanggal live? | Penjadwalan fase |
-| 3 | Penyimpanan foto: disk lokal server atau layanan eksternal (misalnya Cloudinary/S3)? | Struktur kode upload dan biaya |
-| 4 | Hosting backend: shared hosting PHP atau VPS? | Kemampuan queue, worker, dan proses revalidasi |
-| 5 | Berapa lama produk terjual tetap tampil di katalog sebelum disembunyikan (BR-05)? | Logika filter katalog |
-| 6 | Apakah admin perlu lebih dari satu akun? | Desain tabel `users` dan otorisasi |
-| 7 | Apakah perlu pencatatan modal beli atau harga jual aktual (nego) untuk keperluan pribadi, meski statistik tidak dibuat? | Kolom tambahan di `products` |
-| 8 | Cara menangani produk yang sama diminati dua pembeli (reservasi sementara atau cukup manual)? | Aturan bisnis dan status baru |
-| 9 | Apakah queue (driver database) dipakai untuk revalidasi dan pemrosesan gambar? | Kebutuhan worker di hosting |
+| #   | Pertanyaan                                                                                                                        | Dampak                                         |
+| --- | --------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| 1   | Struktur repositori: dua repo terpisah (rencana saat ini) atau monorepo satu repo dengan folder `backend/`, `frontend/`, `docs/`? | Struktur proyek, CI, dan deploy                |
+| 2   | Estimasi waktu pengerjaan dan target tanggal live?                                                                                | Penjadwalan fase                               |
+| 3   | Penyimpanan foto: disk lokal server atau layanan eksternal (misalnya Cloudinary/S3)?                                              | Struktur kode upload dan biaya                 |
+| 4   | Hosting backend: shared hosting PHP atau VPS?                                                                                     | Kemampuan queue, worker, dan proses revalidasi |
+| 5   | Berapa lama produk terjual tetap tampil di katalog sebelum disembunyikan (BR-05)?                                                 | Logika filter katalog                          |
+| 6   | Apakah admin perlu lebih dari satu akun?                                                                                          | Desain tabel `users` dan otorisasi             |
+| 7   | Apakah perlu pencatatan modal beli atau harga jual aktual (nego) untuk keperluan pribadi, meski statistik tidak dibuat?           | Kolom tambahan di `products`                   |
+| 8   | Cara menangani produk yang sama diminati dua pembeli (reservasi sementara atau cukup manual)?                                     | Aturan bisnis dan status baru                  |
+| 9   | Apakah queue (driver database) dipakai untuk revalidasi dan pemrosesan gambar?                                                    | Kebutuhan worker di hosting                    |
 
 ---
 
 ## 18. Log Keputusan
 
-| Keputusan | Alasan |
-|---|---|
-| Backend Laravel 12 sebagai REST API murni | Tujuan portofolio: menunjukkan siklus REST lengkap, bukan hanya `GET`. |
-| Frontend dan halaman admin di Next.js | SEO dan preview link WhatsApp lebih baik; admin ikut memakai API. |
-| Tanpa Filament | Admin dibangun di atas API yang sama agar portofolio memperlihatkan CRUD dan autentikasi lewat REST. |
-| Checkout via WhatsApp dulu, pembayaran online nanti | Cepat live; pembayaran online ditunda ke tahap 2. |
-| Wishlist hanya di browser pembeli | Tanpa akun pembeli; lebih sederhana. |
-| Statistik penjualan tidak dibuat | Keputusan pemilik proyek. |
-| Alur Git: `main` + `develop` + branch per fitur | Kode di `main` terjamin siap rilis. |
-| Backend dikerjakan lebih dulu, lalu frontend | API stabil mempermudah frontend. |
+| Keputusan                                           | Alasan                                                                                               |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Backend Laravel 12 sebagai REST API murni           | Tujuan portofolio: menunjukkan siklus REST lengkap, bukan hanya `GET`.                               |
+| Frontend dan halaman admin di Next.js               | SEO dan preview link WhatsApp lebih baik; admin ikut memakai API.                                    |
+| Tanpa Filament                                      | Admin dibangun di atas API yang sama agar portofolio memperlihatkan CRUD dan autentikasi lewat REST. |
+| Checkout via WhatsApp dulu, pembayaran online nanti | Cepat live; pembayaran online ditunda ke tahap 2.                                                    |
+| Wishlist hanya di browser pembeli                   | Tanpa akun pembeli; lebih sederhana.                                                                 |
+| Statistik penjualan tidak dibuat                    | Keputusan pemilik proyek.                                                                            |
+| Alur Git: `main` + `develop` + branch per fitur     | Kode di `main` terjamin siap rilis.                                                                  |
+| Backend dikerjakan lebih dulu, lalu frontend        | API stabil mempermudah frontend.                                                                     |
