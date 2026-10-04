@@ -1,16 +1,25 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ProductController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+Route::prefix('v1')->group(function () {
+    // Publik
+    Route::middleware('throttle:60,1')->group(function () {
+        Route::get('categories', [CategoryController::class, 'index']);
+        Route::get('products', [ProductController::class, 'index']);
+        Route::get('products/{slug}', [ProductController::class, 'show']);
+    });
 
-Route::prefix('v1')->middleware('throttle:60,1')->group(function () {
-    Route::get('categories', [CategoryController::class, 'index']);
-    Route::get('products', [ProductController::class, 'index']);
-    Route::get('products/{slug}', [ProductController::class, 'show']);
+    // Autentikasi admin
+    Route::prefix('auth')->group(function () {
+        Route::post('login', [AuthController::class, 'login'])->middleware('throttle:login');
+
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::post('logout', [AuthController::class, 'logout']);
+            Route::get('me', [AuthController::class, 'me']);
+        });
+    });
 });
