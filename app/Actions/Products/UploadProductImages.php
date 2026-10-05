@@ -14,7 +14,7 @@ use Throwable;
 
 class UploadProductImages
 {
-        public function __construct(
+    public function __construct(
         private readonly ProductImageProcessor $processor,
         private readonly FrontendCache $frontend,
     ) {}
