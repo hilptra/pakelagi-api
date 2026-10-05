@@ -1,8 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Api\V1\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\V1\Admin\ProductImageController as AdminProductImageController;
-use App\Http\Controllers\Api\V1\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ProductController;
@@ -40,7 +40,7 @@ Route::prefix('v1')->group(function () {
             Route::patch('products/{product}/images/{image}', [AdminProductImageController::class, 'update']);
             Route::delete('products/{product}/images/{image}', [AdminProductImageController::class, 'destroy']);
         });
-        
+
         // Categories
         Route::apiResource('categories', AdminCategoryController::class)->except('show');
     });

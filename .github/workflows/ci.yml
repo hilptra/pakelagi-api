@@ -1,0 +1,119 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+# Batalkan proses lama bila ada commit baru di branch yang sama.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Izin minimum: workflow ini hanya perlu membaca isi repositori.
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Pint dan Larastan
+    runs-on: ubuntu-latest
+    env:
+      # Analisis statis tidak membutuhkan database sungguhan.
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ':memory:'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, gd, exif, fileinfo
+          coverage: none
+
+      - name: Cari folder cache Composer
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache paket Composer
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      - name: Pasang dependensi
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Siapkan environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Pint (cek format)
+        run: ./vendor/bin/pint --test
+
+      - name: Larastan (analisis statis)
+        run: ./vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: pakelagi_test
+        ports:
+          - 3306/tcp
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, gd, exif, fileinfo, pdo_mysql
+          coverage: none
+
+      - name: Pastikan GD mendukung WebP
+        run: php -r "if (!function_exists('imagewebp')) { fwrite(STDERR, 'GD tanpa dukungan WebP' . PHP_EOL); exit(1); }"
+
+      - name: Cari folder cache Composer
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache paket Composer
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      - name: Pasang dependensi
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Siapkan environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Jalankan tes
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: ${{ job.services.mysql.ports['3306'] }}
+          DB_DATABASE: pakelagi_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: php artisan test
