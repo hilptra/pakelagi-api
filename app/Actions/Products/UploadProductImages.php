@@ -4,6 +4,7 @@ namespace App\Actions\Products;
 
 use App\Models\Product;
 use App\Models\ProductImage;
+use App\Services\FrontendCache;
 use App\Services\ProductImageProcessor;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
@@ -13,7 +14,10 @@ use Throwable;
 
 class UploadProductImages
 {
-    public function __construct(private readonly ProductImageProcessor $processor) {}
+        public function __construct(
+        private readonly ProductImageProcessor $processor,
+        private readonly FrontendCache $frontend,
+    ) {}
 
     /**
      * @param  array<int, UploadedFile>  $files
@@ -37,12 +41,16 @@ class UploadProductImages
                 $stored[] = $this->processor->store($file, $product->id);
             }
 
-            return DB::transaction(fn () => $this->createRecords($product, $stored, $existing));
+            $created = DB::transaction(fn () => $this->createRecords($product, $stored, $existing));
         } catch (Throwable $e) {
             $this->processor->delete(collect($stored)->flatten()->all());
 
             throw $e;
         }
+
+        $this->frontend->product($product);
+
+        return $created;
     }
 
     /**

@@ -17,4 +17,10 @@ return [
         'thumbnail_size' => 480,
         'quality' => 80,
     ],
+
+    'frontend' => [
+        'revalidate_url' => env('FRONTEND_REVALIDATE_URL'),
+        'revalidate_secret' => env('REVALIDATE_SECRET'),
+        'revalidate_timeout' => 5,
+    ],
 ];
