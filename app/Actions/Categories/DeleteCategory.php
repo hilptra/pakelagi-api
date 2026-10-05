@@ -3,10 +3,13 @@
 namespace App\Actions\Categories;
 
 use App\Models\Category;
+use App\Services\FrontendCache;
 use Illuminate\Validation\ValidationException;
 
 class DeleteCategory
 {
+    public function __construct(private readonly FrontendCache $frontend) {}
+
     public function execute(Category $category): void
     {
         $count = $category->products()->count();
@@ -18,5 +21,7 @@ class DeleteCategory
         }
 
         $category->delete();
+
+        $this->frontend->categories();
     }
 }
