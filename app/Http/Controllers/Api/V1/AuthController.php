@@ -5,13 +5,18 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Resources\AdminResource;
+use Dedoc\Scramble\Attributes\Group;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
+#[Group('Autentikasi')]
 class AuthController extends Controller
 {
+    /**
+     * Login admin (membuat sesi)
+     */
     public function login(LoginRequest $request): AdminResource
     {
         if (! $request->hasSession()) {
@@ -29,6 +34,9 @@ class AuthController extends Controller
         return new AdminResource(Auth::guard('web')->user());
     }
 
+    /**
+     * Logout admin (menghapus sesi)
+     */
     public function logout(Request $request): Response
     {
         Auth::guard('web')->logout();
@@ -39,6 +47,9 @@ class AuthController extends Controller
         return response()->noContent();
     }
 
+    /**
+     * Ambil profil admin yang sedang login
+     */
     public function me(Request $request): AdminResource
     {
         return new AdminResource($request->user());

@@ -9,12 +9,17 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveCategoryRequest;
 use App\Http\Resources\AdminCategoryResource;
 use App\Models\Category;
+use Dedoc\Scramble\Attributes\Group;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
+#[Group('Admin - Kategori')]
 class CategoryController extends Controller
 {
+    /**
+     * Daftar semua kategori (admin)
+     */
     public function index(): AnonymousResourceCollection
     {
         return AdminCategoryResource::collection(
@@ -22,6 +27,9 @@ class CategoryController extends Controller
         );
     }
 
+    /**
+     * Buat kategori baru
+     */
     public function store(SaveCategoryRequest $request, CreateCategory $createCategory): JsonResponse
     {
         $category = $createCategory->execute($request->validated());
@@ -31,6 +39,9 @@ class CategoryController extends Controller
             ->setStatusCode(Response::HTTP_CREATED);
     }
 
+    /**
+     * Perbarui data kategori
+     */
     public function update(
         SaveCategoryRequest $request,
         Category $category,
@@ -41,6 +52,9 @@ class CategoryController extends Controller
         return new AdminCategoryResource($category->loadCount('products'));
     }
 
+    /**
+     * Hapus kategori
+     */
     public function destroy(Category $category, DeleteCategory $deleteCategory): Response
     {
         $deleteCategory->execute($category);
