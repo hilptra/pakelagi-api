@@ -13,12 +13,17 @@ use App\Http\Requests\UploadProductImagesRequest;
 use App\Http\Resources\AdminProductImageResource;
 use App\Models\Product;
 use App\Models\ProductImage;
+use Dedoc\Scramble\Attributes\Group;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
+#[Group('Admin - Foto Produk')]
 class ProductImageController extends Controller
 {
+    /**
+     * Unggah foto produk
+     */
     public function store(
         UploadProductImagesRequest $request,
         Product $product,
@@ -31,6 +36,9 @@ class ProductImageController extends Controller
             ->setStatusCode(Response::HTTP_CREATED);
     }
 
+    /**
+     * Atur foto utama produk
+     */
     // $product tidak dipakai, tapi harus ada: urutan parameter harus sama dengan urutan di route.
     public function update(
         UpdateProductImageRequest $request,
@@ -41,6 +49,9 @@ class ProductImageController extends Controller
         return new AdminProductImageResource($setPrimaryProductImage->execute($image));
     }
 
+    /**
+     * Urutkan ulang foto produk
+     */
     public function reorder(
         ReorderProductImagesRequest $request,
         Product $product,
@@ -51,6 +62,9 @@ class ProductImageController extends Controller
         return AdminProductImageResource::collection($product->images()->get());
     }
 
+    /**
+     * Hapus foto produk
+     */
     public function destroy(
         Product $product,
         ProductImage $image,
