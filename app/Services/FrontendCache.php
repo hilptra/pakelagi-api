@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Jobs\RevalidateFrontendCache;
+use App\Models\Event;
 use App\Models\Product;
 
 class FrontendCache
@@ -17,6 +18,16 @@ class FrontendCache
     public function categories(): void
     {
         $this->revalidate(['categories', 'catalog']);
+    }
+
+    /** Event dibuat, diubah, dihapus, atau fotonya berubah. */
+    public function event(?Event $event = null): void
+    {
+        $tags = ['events', 'homepage'];
+        if ($event) {
+            $tags[] = "event:{$event->slug}";
+        }
+        $this->revalidate($tags);
     }
 
     /**

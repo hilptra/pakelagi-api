@@ -1,10 +1,13 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Api\V1\Admin\EventController as AdminEventController;
+use App\Http\Controllers\Api\V1\Admin\EventImageController as AdminEventImageController;
 use App\Http\Controllers\Api\V1\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\V1\Admin\ProductImageController as AdminProductImageController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\EventController;
 use App\Http\Controllers\Api\V1\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +17,8 @@ Route::prefix('v1')->group(function () {
         Route::get('categories', [CategoryController::class, 'index']);
         Route::get('products', [ProductController::class, 'index']);
         Route::get('products/{slug}', [ProductController::class, 'show']);
+        Route::get('events', [EventController::class, 'index']);
+        Route::get('events/{slug}', [EventController::class, 'show']);
     });
 
     // Autentikasi admin
@@ -43,5 +48,13 @@ Route::prefix('v1')->group(function () {
 
         // Categories
         Route::apiResource('categories', AdminCategoryController::class)->except('show');
+
+        // Events
+        Route::apiResource('events', AdminEventController::class);
+        Route::scopeBindings()->group(function () {
+            Route::post('events/{event}/images', [AdminEventImageController::class, 'store']);
+            Route::put('events/{event}/images/order', [AdminEventImageController::class, 'reorder']);
+            Route::delete('events/{event}/images/{image}', [AdminEventImageController::class, 'destroy']);
+        });
     });
 });

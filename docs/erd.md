@@ -15,6 +15,7 @@ Diagram di bawah memakai Mermaid, yang tampil otomatis di GitHub.
 erDiagram
     CATEGORIES ||--o{ PRODUCTS : "memiliki"
     PRODUCTS ||--o{ PRODUCT_IMAGES : "memiliki"
+    EVENTS ||--o{ EVENT_IMAGES : "memiliki"
 
     CATEGORIES {
         bigint id PK
@@ -50,6 +51,34 @@ erDiagram
         string thumbnail_path
         smallint sort_order
         boolean is_primary
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    EVENTS {
+        bigint id PK
+        string title
+        string slug UK
+        text description
+        datetime event_date
+        datetime end_date
+        string location
+        string organizer
+        string cover_image
+        string cover_image_thumbnail
+        string status
+        boolean show_on_homepage
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    EVENT_IMAGES {
+        bigint id PK
+        bigint event_id FK
+        string path
+        string thumbnail_path
+        string caption
+        unsigned_int sort_order
         timestamp created_at
         timestamp updated_at
     }
