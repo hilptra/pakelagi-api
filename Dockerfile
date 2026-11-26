@@ -3,6 +3,7 @@ FROM php:8.3-fpm-alpine
 # Install system dependencies & PHP extensions required by Laravel 12, Intervention Image (GD+WebP+Exif), and PostgreSQL/MySQL
 RUN apk add --no-cache \
     bash \
+    ca-certificates \
     curl \
     freetype-dev \
     gettext \
@@ -14,20 +15,22 @@ RUN apk add --no-cache \
     libzip-dev \
     nginx \
     oniguruma-dev \
+    openssl \
     postgresql-dev \
     supervisor \
+    && update-ca-certificates \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j"$(nproc)" \
-        bcmath \
-        exif \
-        gd \
-        intl \
-        mbstring \
-        opcache \
-        pdo_mysql \
-        pdo_pgsql \
-        xml \
-        zip \
+    bcmath \
+    exif \
+    gd \
+    intl \
+    mbstring \
+    opcache \
+    pdo_mysql \
+    pdo_pgsql \
+    xml \
+    zip \
     && rm -rf /var/cache/apk/*
 
 # PHP production configuration
@@ -67,10 +70,10 @@ COPY . .
 # Finalize autoloader & package discovery without touching .env
 RUN composer dump-autoload --optimize --no-dev \
     && mkdir -p storage/framework/cache/data \
-        storage/framework/sessions \
-        storage/framework/views \
-        storage/logs \
-        bootstrap/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/logs \
+    bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 
 # Copy Nginx, Supervisor, and Entrypoint configurations
