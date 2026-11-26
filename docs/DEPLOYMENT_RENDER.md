@@ -81,6 +81,7 @@ DB_URL=postgresql://USER:PASSWORD@HOST:5432/DATABASE
 _(Alternatif jika menggunakan MySQL eksternal: set `DB_CONNECTION=mysql` dan isi `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`.)_
 
 **Opsi B — MySQL Eksternal dengan TLS/SSL Wajib (misalnya Enzonic Databases):**
+
 ```env
 DB_CONNECTION=mysql
 DB_HOST=your-mysql-host.example.com
@@ -92,6 +93,7 @@ MYSQL_ATTR_SSL_CA=true
 # Opsional jika menggunakan path CA custom (default saat true: /etc/ssl/certs/ca-certificates.crt):
 # MYSQL_ATTR_SSL_CA_PATH=/etc/ssl/certs/ca-certificates.crt
 ```
+
 > `config/database.php` menormalkan `MYSQL_ATTR_SSL_CA=true` menjadi path CA bundle sistem (`/etc/ssl/certs/ca-certificates.crt` yang sudah tersedia di Docker image) agar `PDO::MYSQL_ATTR_SSL_CA` melakukan handshake TLS dengan valid. Jika `MYSQL_ATTR_SSL_CA` tidak diisi di lokal, koneksi MySQL development berjalan tanpa TLS seperti biasa.
 
 ### Session, Cache & Queue
@@ -139,9 +141,19 @@ ADMIN_PASSWORD=PasswordKuatMinimal16Karakter
 
 ## 6. Menjalankan Migration & Seeder (Terkontrol)
 
-Entrypoint Docker **sengaja tidak** menjalankan `php artisan migrate --force` secara otomatis setiap container restart demi keamanan data production.
+Entrypoint Docker **tidak** menjalankan migration atau seeder secara default (`RUN_MIGRATIONS_ON_START=false`, `RUN_SEED_ON_START=false`).
 
-Jalankan secara terkontrol melalui **Render Shell** (atau **Pre-Deploy Command** di Render):
+### Opsi A — Melalui Environment Flag Saat Startup (Cocok untuk EthioDeploy / Database Kosong Pertama Kali)
+1. Set environment variable berikut sebelum deploy pertama:
+   ```env
+   RUN_MIGRATIONS_ON_START=true
+   RUN_SEED_ON_START=true
+   ```
+   - `RUN_MIGRATIONS_ON_START=true` menjalankan `php artisan migrate --force` sebelum Nginx/PHP-FPM dimulai. Jika database gagal diakses atau migration error, container akan langsung berhenti (tidak berjalan dalam kondisi rusak).
+   - `RUN_SEED_ON_START=true` menjalankan `php artisan db:seed --force` (di `production`, hanya menjalankan `CategorySeeder` dan `AdminUserSeeder` menggunakan `ADMIN_EMAIL` & `ADMIN_PASSWORD` dari env).
+2. Setelah deploy pertama berhasil dan tabel/admin terverifikasi, **kembalikan kedua flag ke `false`** (atau hapus) agar restart container berikutnya tidak menjalankan ulang migration/seed.
+
+### Opsi B — Melalui Render Shell / Pre-Deploy Command (Manual)
 
 ```bash
 # 1. Jalankan migration
