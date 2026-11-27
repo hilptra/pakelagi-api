@@ -1,0 +1,66 @@
+name: Manual Migrate Settings Table (Production)
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: prod-migrate-settings
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  migrate-settings:
+    name: Run Settings Migration on Production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout branch develop
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, openssl
+          coverage: none
+
+      - name: Install Composer dependencies (no-dev)
+        run: composer install --no-dev --no-interaction --prefer-dist --no-progress --optimize-autoloader
+
+      - name: Validate required database secrets and target database
+        env:
+          DB_DATABASE: ${{ secrets.PROD_DB_DATABASE }}
+          DB_HOST: ${{ secrets.PROD_DB_HOST }}
+          DB_PORT: ${{ secrets.PROD_DB_PORT }}
+          DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+        run: |
+          for var in DB_HOST DB_PORT DB_DATABASE DB_USERNAME DB_PASSWORD; do
+            if [ -z "${!var:-}" ]; then
+              echo "ERROR: Missing required secret for ${var}." >&2
+              exit 1
+            fi
+          done
+
+          if [ "$DB_DATABASE" != "main" ]; then
+            echo "ERROR: PROD_DB_DATABASE must target 'main'." >&2
+            exit 1
+          fi
+
+      - name: Run settings table migration
+        env:
+          APP_ENV: production
+          APP_DEBUG: false
+          DB_CONNECTION: mysql
+          DB_HOST: ${{ secrets.PROD_DB_HOST }}
+          DB_PORT: ${{ secrets.PROD_DB_PORT }}
+          DB_DATABASE: ${{ secrets.PROD_DB_DATABASE }}
+          DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+        run: |
+          php artisan migrate --path=database/migrations/2026_11_27_000001_create_settings_table.php --force --no-interaction
+          php artisan migrate:status --path=database/migrations/2026_11_27_000001_create_settings_table.php --no-interaction
