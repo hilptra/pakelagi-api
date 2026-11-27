@@ -61,6 +61,12 @@ jobs:
           DB_DATABASE: ${{ secrets.PROD_DB_DATABASE }}
           DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          MYSQL_ATTR_SSL_CA: 'true'
+          MYSQL_ATTR_SSL_CA_PATH: /etc/ssl/certs/ca-certificates.crt
         run: |
+          if [ ! -f "$MYSQL_ATTR_SSL_CA_PATH" ]; then
+            echo "ERROR: Missing CA certificate bundle at ${MYSQL_ATTR_SSL_CA_PATH}." >&2
+            exit 1
+          fi
           php artisan migrate --path=database/migrations/2026_11_27_000001_create_settings_table.php --force --no-interaction
           php artisan migrate:status --path=database/migrations/2026_11_27_000001_create_settings_table.php --no-interaction
