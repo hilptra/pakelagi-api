@@ -13,6 +13,7 @@ class UpdateCategory
     {
         $category->update($data);
 
+        Category::forgetPublicCache();
         $this->frontend->categories();
 
         return $category;

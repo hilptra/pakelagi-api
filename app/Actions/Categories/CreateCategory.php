@@ -17,6 +17,7 @@ class CreateCategory
             'slug' => UniqueSlug::make(Category::class, $data['name'], 'kategori'),
         ]);
 
+        Category::forgetPublicCache();
         $this->frontend->categories();
 
         return $category;

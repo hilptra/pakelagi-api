@@ -22,6 +22,7 @@ class DeleteCategory
 
         $category->delete();
 
+        Category::forgetPublicCache();
         $this->frontend->categories();
     }
 }
