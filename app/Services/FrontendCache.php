@@ -30,6 +30,12 @@ class FrontendCache
         $this->revalidate($tags);
     }
 
+    /** Pengaturan website (seperti nomor WhatsApp admin) diperbarui. */
+    public function settings(): void
+    {
+        $this->revalidate(['settings', 'homepage']);
+    }
+
     /**
      * @param  array<int, string>  $tags
      */

@@ -5,10 +5,12 @@ use App\Http\Controllers\Api\V1\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Api\V1\Admin\EventImageController as AdminEventImageController;
 use App\Http\Controllers\Api\V1\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\V1\Admin\ProductImageController as AdminProductImageController;
+use App\Http\Controllers\Api\V1\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\EventController;
 use App\Http\Controllers\Api\V1\ProductController;
+use App\Http\Controllers\Api\V1\SettingController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -19,6 +21,7 @@ Route::prefix('v1')->group(function () {
         Route::get('products/{slug}', [ProductController::class, 'show']);
         Route::get('events', [EventController::class, 'index']);
         Route::get('events/{slug}', [EventController::class, 'show']);
+        Route::get('settings/whatsapp', [SettingController::class, 'whatsapp']);
     });
 
     // Autentikasi admin
@@ -56,5 +59,9 @@ Route::prefix('v1')->group(function () {
             Route::put('events/{event}/images/order', [AdminEventImageController::class, 'reorder']);
             Route::delete('events/{event}/images/{image}', [AdminEventImageController::class, 'destroy']);
         });
+
+        // Settings
+        Route::get('settings/whatsapp', [AdminSettingController::class, 'getWhatsApp']);
+        Route::put('settings/whatsapp', [AdminSettingController::class, 'updateWhatsApp']);
     });
 });

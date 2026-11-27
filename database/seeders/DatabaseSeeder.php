@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CategorySeeder::class,
             AdminUserSeeder::class,
+            SettingSeeder::class,
         ]);
 
         if (app()->environment('local')) {
