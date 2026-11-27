@@ -1,0 +1,256 @@
+name: Manual Migrate Performance Indexes (Production)
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Ketik RUN_PERFORMANCE_INDEX_MIGRATION untuk menjalankan migration index production'
+        required: true
+        type: string
+
+concurrency:
+  group: prod-db-migration
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  migrate-performance-indexes:
+    name: Run Performance Index Migration on Production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate manual confirmation input
+        env:
+          CONFIRMATION_INPUT: ${{ inputs.confirmation }}
+        run: |
+          if [ "$CONFIRMATION_INPUT" != "RUN_PERFORMANCE_INDEX_MIGRATION" ]; then
+            echo "ERROR: Confirmation input must equal RUN_PERFORMANCE_INDEX_MIGRATION." >&2
+            exit 1
+          fi
+
+      - name: Checkout branch develop
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, openssl
+          coverage: none
+
+      - name: Install Composer dependencies (no-dev)
+        run: composer install --no-dev --no-interaction --prefer-dist --no-progress --optimize-autoloader
+
+      - name: Preflight checks (secrets, TLS CA, Laravel boot, DB connection, migration status)
+        id: preflight
+        env:
+          APP_ENV: production
+          APP_DEBUG: false
+          DB_CONNECTION: mysql
+          DB_HOST: ${{ secrets.PROD_DB_HOST }}
+          DB_PORT: ${{ secrets.PROD_DB_PORT }}
+          DB_DATABASE: ${{ secrets.PROD_DB_DATABASE }}
+          DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          MYSQL_ATTR_SSL_CA: 'true'
+          MYSQL_ATTR_SSL_CA_PATH: /etc/ssl/certs/ca-certificates.crt
+        run: |
+          for var in DB_HOST DB_PORT DB_DATABASE DB_USERNAME DB_PASSWORD; do
+            if [ -z "${!var:-}" ]; then
+              echo "ERROR: Missing required secret for ${var}." >&2
+              exit 1
+            fi
+          done
+
+          if [ "$DB_DATABASE" != "main" ]; then
+            echo "ERROR: PROD_DB_DATABASE must target 'main'." >&2
+            exit 1
+          fi
+
+          if [ ! -f "$MYSQL_ATTR_SSL_CA_PATH" ]; then
+            echo "ERROR: Missing CA certificate bundle at ${MYSQL_ATTR_SSL_CA_PATH}." >&2
+            exit 1
+          fi
+
+          TARGET_MIGRATION="database/migrations/2026_11_27_000002_add_performance_indexes.php"
+          if [ ! -f "$TARGET_MIGRATION" ]; then
+            echo "ERROR: Target migration file not found: ${TARGET_MIGRATION}" >&2
+            exit 1
+          fi
+
+          PREFLIGHT_DECISION=$(php -r '
+            require "vendor/autoload.php";
+            $app = require "bootstrap/app.php";
+            $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+
+            $sslOptions = config("database.connections.mysql.options", []);
+            if (empty($sslOptions[PDO::MYSQL_ATTR_SSL_CA])) {
+                fwrite(STDERR, "ERROR: PDO::MYSQL_ATTR_SSL_CA is not configured on mysql connection.\n");
+                exit(1);
+            }
+
+            $db = Illuminate\Support\Facades\DB::connection();
+            $db->getPdo();
+            $row = $db->selectOne("SELECT DATABASE() AS db_name");
+            if (!$row || $row->db_name !== "main") {
+                fwrite(STDERR, "ERROR: Connected database mismatch.\n");
+                exit(1);
+            }
+
+            $ran = $db->table("migrations")
+                ->where("migration", "2026_11_27_000002_add_performance_indexes")
+                ->exists();
+
+            $expected = [
+                ["events", "events_status_event_date_index"],
+                ["events", "events_status_homepage_date_index"],
+                ["products", "products_status_created_at_index"],
+                ["products", "products_size_label_index"],
+                ["product_images", "product_images_product_primary_index"],
+                ["product_images", "product_images_product_sort_index"],
+            ];
+
+            $rows = $db->select(
+                "SELECT DISTINCT table_name AS tbl, index_name AS idx
+                 FROM information_schema.statistics
+                 WHERE table_schema = DATABASE()
+                   AND table_name IN (\"events\", \"products\", \"product_images\")"
+            );
+
+            $found = [];
+            foreach ($rows as $r) {
+                $found[$r->tbl . "." . $r->idx] = true;
+            }
+
+            $existing = [];
+            $missing = [];
+            foreach ($expected as [$table, $index]) {
+                $key = $table . "." . $index;
+                if (isset($found[$key])) {
+                    $existing[] = $key;
+                } else {
+                    $missing[] = $key;
+                }
+            }
+
+            if ($ran && $missing === []) {
+                fwrite(STDERR, "Preflight Case A: Migration already Ran and all 6 indexes exist. Skipping.\n");
+                echo "skip";
+                exit(0);
+            }
+
+            if (!$ran && $existing === []) {
+                fwrite(STDERR, "Preflight Case B: Migration Pending and none of the 6 indexes exist. Ready to run.\n");
+                echo "run";
+                exit(0);
+            }
+
+            if (!$ran && $missing === []) {
+                fwrite(STDERR, "ERROR (Case C): All 6 indexes already exist, but migration record is missing. Aborting without mutation.\n");
+                exit(1);
+            }
+
+            if (!$ran && $existing !== [] && $missing !== []) {
+                fwrite(STDERR, "ERROR (Case D): Partial index state detected while migration is Pending. Aborting without mutation.\n");
+                fwrite(STDERR, "Existing indexes: " . implode(", ", $existing) . "\n");
+                fwrite(STDERR, "Missing indexes: " . implode(", ", $missing) . "\n");
+                exit(1);
+            }
+
+            fwrite(STDERR, "ERROR (Case E): Migration status is Ran, but expected indexes are incomplete. Aborting without re-running.\n");
+            fwrite(STDERR, "Missing indexes: " . implode(", ", $missing) . "\n");
+            exit(1);
+          ')
+
+          echo "decision=${PREFLIGHT_DECISION}" >> "$GITHUB_OUTPUT"
+          php artisan migrate:status --path="$TARGET_MIGRATION" --no-interaction
+
+      - name: Skip migration if already Ran
+        if: steps.preflight.outputs.decision == 'skip'
+        run: |
+          echo "Migration 2026_11_27_000002_add_performance_indexes already has status Ran and all 6 indexes exist. Skipping execution without mutation."
+
+      - name: Run performance index migration
+        if: steps.preflight.outputs.decision == 'run'
+        env:
+          APP_ENV: production
+          APP_DEBUG: false
+          DB_CONNECTION: mysql
+          DB_HOST: ${{ secrets.PROD_DB_HOST }}
+          DB_PORT: ${{ secrets.PROD_DB_PORT }}
+          DB_DATABASE: ${{ secrets.PROD_DB_DATABASE }}
+          DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          MYSQL_ATTR_SSL_CA: 'true'
+          MYSQL_ATTR_SSL_CA_PATH: /etc/ssl/certs/ca-certificates.crt
+        run: |
+          php artisan migrate --path=database/migrations/2026_11_27_000002_add_performance_indexes.php --force --no-interaction
+
+      - name: Verify migration status and 6 MySQL indexes
+        env:
+          APP_ENV: production
+          APP_DEBUG: false
+          DB_CONNECTION: mysql
+          DB_HOST: ${{ secrets.PROD_DB_HOST }}
+          DB_PORT: ${{ secrets.PROD_DB_PORT }}
+          DB_DATABASE: ${{ secrets.PROD_DB_DATABASE }}
+          DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          MYSQL_ATTR_SSL_CA: 'true'
+          MYSQL_ATTR_SSL_CA_PATH: /etc/ssl/certs/ca-certificates.crt
+        run: |
+          php artisan migrate:status --path=database/migrations/2026_11_27_000002_add_performance_indexes.php --no-interaction
+          php -r '
+            require "vendor/autoload.php";
+            $app = require "bootstrap/app.php";
+            $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+            $db = Illuminate\Support\Facades\DB::connection();
+
+            $ran = $db->table("migrations")
+                ->where("migration", "2026_11_27_000002_add_performance_indexes")
+                ->exists();
+            if (!$ran) {
+                fwrite(STDERR, "ERROR: Migration record not found in migrations table.\n");
+                exit(1);
+            }
+
+            $expected = [
+                ["events", "events_status_event_date_index"],
+                ["events", "events_status_homepage_date_index"],
+                ["products", "products_status_created_at_index"],
+                ["products", "products_size_label_index"],
+                ["product_images", "product_images_product_primary_index"],
+                ["product_images", "product_images_product_sort_index"],
+            ];
+
+            $rows = $db->select(
+                "SELECT DISTINCT table_name AS tbl, index_name AS idx
+                 FROM information_schema.statistics
+                 WHERE table_schema = DATABASE()
+                   AND table_name IN (\"events\", \"products\", \"product_images\")"
+            );
+
+            $found = [];
+            foreach ($rows as $row) {
+                $found[$row->tbl . "." . $row->idx] = true;
+            }
+
+            $missing = [];
+            foreach ($expected as [$table, $index]) {
+                $key = $table . "." . $index;
+                if (!isset($found[$key])) {
+                    $missing[] = $key;
+                } else {
+                    echo "OK: " . $key . PHP_EOL;
+                }
+            }
+
+            if ($missing !== []) {
+                fwrite(STDERR, "ERROR: Missing expected indexes: " . implode(", ", $missing) . PHP_EOL);
+                exit(1);
+            }
+          '
