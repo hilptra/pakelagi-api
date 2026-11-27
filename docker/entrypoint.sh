@@ -32,4 +32,11 @@ if [ "${RUN_SEED_ON_START:-false}" = "true" ]; then
     fi
 fi
 
+# Cache Laravel configuration, routes, and events at container startup using runtime env
+echo "[entrypoint] Caching Laravel configuration, routes, and events..."
+php /var/www/html/artisan config:cache --no-interaction
+php /var/www/html/artisan route:cache --no-interaction
+php /var/www/html/artisan event:cache --no-interaction
+chown -R www-data:www-data /var/www/html/bootstrap/cache
+
 exec "$@"
